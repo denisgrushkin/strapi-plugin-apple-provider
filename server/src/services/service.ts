@@ -114,7 +114,20 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => {
 
     try {
       const url = new URL(baseUrl);
-      url.pathname = path.posix.join(url.pathname.replace(/\/+$/, ''), 'auth', APPLE_PROVIDER_NAME, 'callback');
+      const basePath = url.pathname.replace(/\/+$/, '') || '/';
+      const rawPrefix =
+        (strapi.config.get('api.rest.prefix') as string | undefined) ??
+        (strapi.config.get('api.restPrefix') as string | undefined) ??
+        '/api';
+      const normalizedPrefix = rawPrefix.replace(/(^\/+|\/+$)/g, '');
+      const segments: string[] = [basePath];
+
+      if (normalizedPrefix) {
+        segments.push(normalizedPrefix);
+      }
+
+      segments.push('auth', APPLE_PROVIDER_NAME, 'callback');
+      url.pathname = path.posix.join(...segments);
       return url.toString();
     } catch (error) {
       strapi.log.warn(
