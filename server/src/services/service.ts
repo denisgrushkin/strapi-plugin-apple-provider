@@ -114,7 +114,7 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => {
 
     try {
       const url = new URL(baseUrl);
-      url.pathname = path.posix.join(url.pathname.replace(/\/+$/, ''), 'auth', APPLE_PROVIDER_NAME, 'callback');
+      url.pathname = path.posix.join(url.pathname.replace(/\/+$/, ''), 'api', 'connect', APPLE_PROVIDER_NAME, 'callback');
       return url.toString();
     } catch (error) {
       strapi.log.warn(
