@@ -14,6 +14,10 @@ type StoredSettings = {
   enabled: boolean;
 };
 
+type PublicSettings = StoredSettings & {
+  callbackUrl: string;
+};
+
 type SettingsInput = {
   redirectUrl?: unknown;
   authKey?: unknown;
@@ -123,6 +127,11 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => {
       return '';
     }
   };
+
+  const toPublicSettings = (settings: StoredSettings): PublicSettings => ({
+    ...settings,
+    callbackUrl: getCallbackUrl(),
+  });
 
   const copyUploadedFile = async (fileInput: UploadedFile | UploadedFile[] | undefined | null) => {
     if (!fileInput) {
@@ -390,20 +399,27 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => {
   };
 
   return {
-    async getSettings(): Promise<StoredSettings> {
+    async getSettings(): Promise<PublicSettings> {
       const pluginStore = getPluginStore();
       const storedValue = await pluginStore.get();
 
       if (!storedValue) {
         const defaults = getDefaultSettings();
         await pluginStore.set({ value: defaults });
-        return defaults;
+        return toPublicSettings(defaults);
       }
 
-      return normalizeSettings(storedValue);
+      return toPublicSettings(normalizeSettings(storedValue));
     },
 
-    async updateSettings({ redirectUrl, authKey, teamId, clientId, keyId, enabled }: SettingsInput) {
+    async updateSettings({
+      redirectUrl,
+      authKey,
+      teamId,
+      clientId,
+      keyId,
+      enabled,
+    }: SettingsInput): Promise<PublicSettings> {
       const pluginStore = getPluginStore();
       const currentSettings = normalizeSettings(await pluginStore.get());
 
@@ -445,7 +461,7 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => {
       await syncProviderRegistration(mergedSettings);
       await syncGrantStore(mergedSettings);
 
-      return mergedSettings;
+      return toPublicSettings(mergedSettings);
     },
 
     async registerProvider() {

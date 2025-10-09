@@ -15,6 +15,7 @@ type PluginSettings = {
   clientId: string;
   keyId: string;
   enabled: boolean;
+  callbackUrl: string;
 };
 
 const HomePage = () => {
@@ -23,6 +24,7 @@ const HomePage = () => {
   const [clientId, setClientId] = useState('');
   const [keyId, setKeyId] = useState('');
   const [enabled, setEnabled] = useState(false);
+  const [callbackUrl, setCallbackUrl] = useState('');
   const [authKeyFile, setAuthKeyFile] = useState<File | null>(null);
   const [authKeyFilename, setAuthKeyFilename] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -47,6 +49,7 @@ const HomePage = () => {
       setKeyId(data.keyId ?? '');
       setEnabled(Boolean(data.enabled));
       setAuthKeyFilename(data.authKeyFilename ?? null);
+      setCallbackUrl(data.callbackUrl ?? '');
     } catch (error: any) {
       const message =
         error?.response?.data?.error?.message ??
@@ -93,6 +96,7 @@ const HomePage = () => {
       setKeyId(data.keyId ?? '');
       setAuthKeyFilename(data.authKeyFilename ?? null);
       setAuthKeyFile(null);
+      setCallbackUrl(data.callbackUrl ?? '');
 
       toggleNotification?.toggleNotification?.({
         type: 'success',
@@ -249,6 +253,24 @@ const HomePage = () => {
                 {formatSettingsMessage(
                   'settings.redirect-url.hint',
                   'Your users will be redirected to this URL with the Apple authorization code.'
+                )}
+              </Typography>
+            </Box>
+
+            <Box paddingBottom={6}>
+              <Typography as="label" htmlFor="callbackUrl" variant="pi" fontWeight="bold">
+                {formatSettingsMessage(
+                  'settings.callback.label',
+                  'Strapi callback URL'
+                )}
+              </Typography>
+              <Box paddingTop={2} paddingBottom={2}>
+                <TextInput id="callbackUrl" name="callbackUrl" value={callbackUrl} readOnly />
+              </Box>
+              <Typography variant="pi" textColor="neutral500">
+                {formatSettingsMessage(
+                  'settings.callback.hint',
+                  'Add this URL to the Apple Developer console as an allowed return URL.'
                 )}
               </Typography>
             </Box>
